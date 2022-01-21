@@ -1,0 +1,1142 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>STAN.Client</name>
+    </assembly>
+    <members>
+        <member name="M:STAN.Client.AsyncSubscription.Finalize">
+            <summary>
+            Releases unmanaged resources and performs other cleanup operations
+            </summary>
+        </member>
+        <member name="P:STAN.Client.BlockingDictionary`2.Keys">
+            <summary>
+            Gets a snapshot of the keys in the dictionary.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanConsts">
+            <summary>
+            NATS Streaming client constants.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.Version">
+            <summary>
+            NATS C# streaming client version.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultNatsURL">
+            <summary>
+            DefaultNatsURL is the default URL the client connects to.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultConnectWait">
+            <summary>
+            DefaultConnectWait is the default timeout used for the connect operation.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultDiscoverPrefix">
+            <summary>
+            DefaultDiscoverPrefix is the prefix subject used to connect to the NATS Streaming server.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultACKPrefix">
+            <summary>
+            DefaultACKPrefix is the prefix subject used to send ACKs to the NATS Streaming server.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultMaxPubAcksInflight">
+            <summary>
+            DefaultMaxPubAcksInflight is the default maximum number of published messages
+            without outstanding ACKs from the server.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultAckWait">
+            <summary>
+            DefaultAckWait indicates how long the server should wait for an ACK before resending a message.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultMaxInflight">
+            <summary>
+            DefaultMaxInflight indicates how many messages with outstanding ACKs the server can send.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultPingInterval">
+            <summary>
+            DefaultPingInterval is the default interval (in milliseconds) at which a connection sends a PING to the server.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultPingMaxOut">
+            <summary>
+            DefaultPingMaxOut is the number of PINGs without a response before the connection is considered lost.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultPubAckPendingMessageLimit">
+            <summary>
+            Default MessageLimit for PubAckPendingLimits.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.StanConsts.DefaultPubAckPendingBytesLimit">
+            <summary>
+            Default BytesLimit for PubAckPendingLimits.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.IStanConnection">
+            <summary>
+            A connection represents a connection to the NATS Streaming subsystem.
+            It can publish and subscribe to messages within the NATS Streaming cluster. 
+            </summary>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.Publish(System.String,System.Byte[])">
+            <summary>
+            Publish publishes the data argument to the given subject. The data
+            argument is left untouched and needs to be correctly interpreted on
+            the receiver.  This API is synchronous and waits for the acknowledgement
+            or error from the NATS streaming server.
+            </summary>
+            <param name="subject">Subject to publish the message to.</param>
+            <param name="data">Message payload.</param>
+            <exception cref="T:STAN.Client.StanException">When an error occurs locally or on the NATS streaming server.</exception>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.Publish(System.String,System.Byte[],System.EventHandler{STAN.Client.StanAckHandlerArgs})">
+            <summary>
+            Publish publishes the data argument to the given subject. The data
+            argument is left untouched and needs to be correctly interpreted on
+            the receiver.  This API is asynchronous and handles the acknowledgement
+            or error from the NATS streaming server in the provided handler.  An exception is thrown when
+            an error occurs during the send, the handler will process acknowledgments and errors.
+            </summary>
+            <param name="subject">Subject to publish the message to.</param>
+            <param name="data">Message payload.</param>
+            <param name="handler">Event handler to process message acknowledgements.</param>
+            <returns>The GUID of the published message.</returns>
+            <exception cref="T:STAN.Client.StanException">Thrown when an error occurs publishing the message.</exception>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.PublishAsync(System.String,System.Byte[])">
+            <summary>
+            Publish publishes the data argument to the given subject. The data
+            argument is left untouched and needs to be correctly interpreted on
+            the receiver.  This API is asynchronous and handles the acknowledgement
+            or error from the NATS streaming server in the provided handler.  An exception is thrown when
+            an error occurs during the send, the handler will process acknowledgments and errors.
+            </summary>
+            <param name="subject">Subject to publish the message to.</param>
+            <param name="data"></param>
+            <returns>The task object representing the asynchronous operation, containing the guid.</returns>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.Subscribe(System.String,System.EventHandler{STAN.Client.StanMsgHandlerArgs})">
+            <summary>
+            Subscribe will create an Asynchronous Subscriber with
+            interest in a given subject, assign the handler, and immediately
+            start receiving messages.  The subscriber will default options.
+            </summary>
+            <param name="subject">Subject of interest.</param>
+            <param name="handler">A message handler to process messages.</param>
+            <returns>A new Subscription</returns>
+            <exception cref="T:STAN.Client.StanException">An error occured creating the subscriber.</exception>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.Subscribe(System.String,STAN.Client.StanSubscriptionOptions,System.EventHandler{STAN.Client.StanMsgHandlerArgs})">
+            <summary>
+            Subscribe will create an Asynchronous subscriber with
+            interest in a given subject, assign the handler, and immediately
+            start receiving messages.
+            </summary>
+            <param name="subject">Subject of interest.</param>
+            <param name="options">SubscriptionOptions used to create the subscriber.</param>
+            <param name="handler">A message handler to process messages.</param>
+            <returns>A new subscription.</returns>
+            <exception cref="T:STAN.Client.StanException">An error occured creating the subscriber.</exception>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.Subscribe(System.String,System.String,System.EventHandler{STAN.Client.StanMsgHandlerArgs})">
+            <summary>
+            Subscribe will create an Asynchronous Subscriber with
+            interest in a given subject, assign the handler, and immediately
+            start receiving messages.  The subscriber will use default 
+            subscriber options.
+            </summary>
+            <param name="subject">Subject of interest.</param>
+            <param name="qgroup">Name of the queue group.</param>
+            <param name="handler">A message handler to process messages.</param>
+            <returns>A new subscription.</returns>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.Subscribe(System.String,System.String,STAN.Client.StanSubscriptionOptions,System.EventHandler{STAN.Client.StanMsgHandlerArgs})">
+            <summary>
+            Subscribe will create an Asynchronous Subscriber with
+            interest in a given subject, assign the handler, and immediately
+            start receiving messages.
+            </summary>
+            <param name="subject">Subject of interest.</param>
+            <param name="qgroup">Name of the queue group.</param>
+            <param name="options">SubscriptionOptions used to create the subscriber.</param>
+            <param name="handler">A message handler to process messages.</param>
+            <returns>A new subscription.</returns>
+        </member>
+        <member name="M:STAN.Client.IStanConnection.Close">
+            <summary>
+            Closes the connection to to the NATS streaming server.  If a
+            NATS connection was provided, it will remain open.
+            </summary>
+            <exception cref="T:STAN.Client.StanCloseRequestException">Error closing the connection.</exception>
+        </member>
+        <member name="P:STAN.Client.IStanConnection.NATSConnection">
+            <summary>
+            The NATConnection property gets the underlying NATS connection.
+            Use this with care. For example, closing the underlying 
+            NATS conn will invalidate the NATS Streaming connection.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.IStanSubscription">
+            <summary>
+            Subscription represents a subscription within the NATS Streaming cluster. Subscriptions will be rate matched and follow at-least delivery semantics.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.IStanSubscription.Unsubscribe">
+            <summary>
+            Removes interest in the given subject.
+            For durables, it means that the durable interest is also removed
+            from the server. Restarting a durable with the same name will 
+            not resume the subscription, it will be considered a new one.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.IStanSubscription.Close">
+            <summary>
+            Close removes this subscriber from the server, but unlike Unsubscribe(),
+            the durable interest is not removed. If the client has connected to a server
+            for which this feature is not available, Close() will return a ErrNoServerSupport
+            error.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanOptions">
+            <summary>
+            Options available to configure a connection to the NATS streaming server.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.NatsURL">
+            <summary>
+            Gets or sets the url to connect to a NATS server.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.NatsConn">
+            <summary>
+            Sets the underlying NATS connection to be used by a NATS Streaming 
+            connection object.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.ConnectTimeout">
+            <summary>
+            ConnectTimeout is an Option to set the timeout for establishing a connection
+            in milliseconds.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.PubAckWait">
+            <summary>
+            PubAckWait is an option to set the timeout for waiting for an ACK 
+            for a published message in milliseconds.  The value must be greater than zero.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.DiscoverPrefix">
+            <summary>
+            Sets the discover prefix used in connecting to the NATS streaming server.
+            This must match the settings on the NATS streaming sever.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.MaxPubAcksInFlight">
+            <summary>
+            MaxPubAcksInflight is an Option to set the maximum number 
+            of published messages without outstanding ACKs from the server.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.PingMaxOutstanding">
+            <summary>
+            PingMaxOutstanding is an option to set the maximum number 
+            of outstanding pings with the streaming server.
+            See <see cref="F:STAN.Client.StanConsts.DefaultPingMaxOut"/>.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.PingInterval">
+            <summary>
+            PingInterval is an option to set the interval of pings in milliseconds.
+            See <see cref="F:STAN.Client.StanConsts.DefaultPingInterval"/>.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.PubAckPendingMessageLimit">
+            <summary>
+            Gets the PubAck MessageLimit. Use <see cref="M:STAN.Client.StanOptions.SetPubAckPendingLimits(System.Int64,System.Int64)"/> to update.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanOptions.PubAckPendingBytesLimit">
+            <summary>
+            Gets the PubAck BytesLimit. Use <see cref="M:STAN.Client.StanOptions.SetPubAckPendingLimits(System.Int64,System.Int64)"/> to update.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanOptions.SetPubAckPendingLimits(System.Int64,System.Int64)">
+            <summary>
+            Sets the limits for pending publish acknowledgement messages and bytes.
+            </summary>
+            <remarks>Zero (<c>0</c>) is not allowed. Negative values indicate that the
+            given metric is not limited.</remarks>
+            <param name="messageLimit">The maximum number of pending messages.</param>
+            <param name="bytesLimit">The maximum number of pending bytes of payload.</param>
+        </member>
+        <member name="P:STAN.Client.StanOptions.ConnectionLostEventHandler">
+            <summary>
+            Represents the method that will handle an event raised
+            when a connection has been disconnected from a streaming server.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanOptions.GetDefaultOptions">
+            <summary>
+            Returns the default connection options.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:STAN.Client.ProtocolReflection">
+            <summary>Holder for reflection information generated from protocol.proto</summary>
+        </member>
+        <member name="P:STAN.Client.ProtocolReflection.Descriptor">
+            <summary>File descriptor for protocol.proto</summary>
+        </member>
+        <member name="T:STAN.Client.StartPosition">
+            <summary>
+            Enum for start position type.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.PubMsg">
+            <summary>
+            How messages are delivered to the STAN cluster
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubMsg.ClientIDFieldNumber">
+            <summary>Field number for the "clientID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubMsg.ClientID">
+            <summary>
+            ClientID
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubMsg.GuidFieldNumber">
+            <summary>Field number for the "guid" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubMsg.Guid">
+            <summary>
+            guid
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubMsg.SubjectFieldNumber">
+            <summary>Field number for the "subject" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubMsg.Subject">
+            <summary>
+            subject
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubMsg.ReplyFieldNumber">
+            <summary>Field number for the "reply" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubMsg.Reply">
+            <summary>
+            optional reply
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubMsg.DataFieldNumber">
+            <summary>Field number for the "data" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubMsg.Data">
+            <summary>
+            payload
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubMsg.ConnIDFieldNumber">
+            <summary>Field number for the "connID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubMsg.ConnID">
+            <summary>
+            Connection ID. For servers that know about this field, clientID can be omitted
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubMsg.Sha256FieldNumber">
+            <summary>Field number for the "sha256" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubMsg.Sha256">
+            <summary>
+            optional sha256 of data
+            </summary>
+        </member>
+        <member name="T:STAN.Client.PubAck">
+            <summary>
+            Used to ACK to publishers
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubAck.GuidFieldNumber">
+            <summary>Field number for the "guid" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubAck.Guid">
+            <summary>
+            guid
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PubAck.ErrorFieldNumber">
+            <summary>Field number for the "error" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PubAck.Error">
+            <summary>
+            err string, empty/omitted if no error
+            </summary>
+        </member>
+        <member name="T:STAN.Client.MsgProto">
+            <summary>
+            Msg struct. Sequence is assigned for global ordering by
+            the cluster after the publisher has been acknowledged.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.MsgProto.SequenceFieldNumber">
+            <summary>Field number for the "sequence" field.</summary>
+        </member>
+        <member name="P:STAN.Client.MsgProto.Sequence">
+            <summary>
+            globally ordered sequence number for the subject's channel
+            </summary>
+        </member>
+        <member name="F:STAN.Client.MsgProto.SubjectFieldNumber">
+            <summary>Field number for the "subject" field.</summary>
+        </member>
+        <member name="P:STAN.Client.MsgProto.Subject">
+            <summary>
+            subject
+            </summary>
+        </member>
+        <member name="F:STAN.Client.MsgProto.ReplyFieldNumber">
+            <summary>Field number for the "reply" field.</summary>
+        </member>
+        <member name="P:STAN.Client.MsgProto.Reply">
+            <summary>
+            optional reply
+            </summary>
+        </member>
+        <member name="F:STAN.Client.MsgProto.DataFieldNumber">
+            <summary>Field number for the "data" field.</summary>
+        </member>
+        <member name="P:STAN.Client.MsgProto.Data">
+            <summary>
+            payload
+            </summary>
+        </member>
+        <member name="F:STAN.Client.MsgProto.TimestampFieldNumber">
+            <summary>Field number for the "timestamp" field.</summary>
+        </member>
+        <member name="P:STAN.Client.MsgProto.Timestamp">
+            <summary>
+            received timestamp
+            </summary>
+        </member>
+        <member name="F:STAN.Client.MsgProto.RedeliveredFieldNumber">
+            <summary>Field number for the "redelivered" field.</summary>
+        </member>
+        <member name="P:STAN.Client.MsgProto.Redelivered">
+            <summary>
+            Flag specifying if the message is being redelivered
+            </summary>
+        </member>
+        <member name="F:STAN.Client.MsgProto.CRC32FieldNumber">
+            <summary>Field number for the "CRC32" field.</summary>
+        </member>
+        <member name="P:STAN.Client.MsgProto.CRC32">
+            <summary>
+            optional IEEE CRC32
+            </summary>
+        </member>
+        <member name="T:STAN.Client.Ack">
+            <summary>
+            Ack will deliver an ack for a delivered msg.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.Ack.SubjectFieldNumber">
+            <summary>Field number for the "subject" field.</summary>
+        </member>
+        <member name="P:STAN.Client.Ack.Subject">
+            <summary>
+            Subject
+            </summary>
+        </member>
+        <member name="F:STAN.Client.Ack.SequenceFieldNumber">
+            <summary>Field number for the "sequence" field.</summary>
+        </member>
+        <member name="P:STAN.Client.Ack.Sequence">
+            <summary>
+            Sequence to acknowledge
+            </summary>
+        </member>
+        <member name="T:STAN.Client.ConnectRequest">
+            <summary>
+            Connection Request
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectRequest.ClientIDFieldNumber">
+            <summary>Field number for the "clientID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectRequest.ClientID">
+            <summary>
+            Client name/identifier.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectRequest.HeartbeatInboxFieldNumber">
+            <summary>Field number for the "heartbeatInbox" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectRequest.HeartbeatInbox">
+            <summary>
+            Inbox for server initiated heartbeats.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectRequest.ProtocolFieldNumber">
+            <summary>Field number for the "protocol" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectRequest.Protocol">
+            <summary>
+            Protocol the client is at.
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectRequest.ConnIDFieldNumber">
+            <summary>Field number for the "connID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectRequest.ConnID">
+            <summary>
+            Connection ID, a way to uniquely identify a connection (no connection should ever have the same)
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectRequest.PingIntervalFieldNumber">
+            <summary>Field number for the "pingInterval" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectRequest.PingInterval">
+            <summary>
+            Interval at which client wishes to send PINGs (expressed in seconds).
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectRequest.PingMaxOutFieldNumber">
+            <summary>Field number for the "pingMaxOut" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectRequest.PingMaxOut">
+            <summary>
+            Maximum number of PINGs without a response after which the connection can be considered lost.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.ConnectResponse">
+            <summary>
+            Response to a client connect
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.PubPrefixFieldNumber">
+            <summary>Field number for the "pubPrefix" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.PubPrefix">
+            <summary>
+            Prefix to use when publishing to this STAN cluster
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.SubRequestsFieldNumber">
+            <summary>Field number for the "subRequests" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.SubRequests">
+            <summary>
+            Subject to use for subscription requests
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.UnsubRequestsFieldNumber">
+            <summary>Field number for the "unsubRequests" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.UnsubRequests">
+            <summary>
+            Subject to use for unsubscribe requests
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.CloseRequestsFieldNumber">
+            <summary>Field number for the "closeRequests" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.CloseRequests">
+            <summary>
+            Subject for closing the stan connection
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.ErrorFieldNumber">
+            <summary>Field number for the "error" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.Error">
+            <summary>
+            err string, empty/omitted if no error
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.SubCloseRequestsFieldNumber">
+            <summary>Field number for the "subCloseRequests" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.SubCloseRequests">
+            <summary>
+            Subject to use for subscription close requests
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.PingRequestsFieldNumber">
+            <summary>Field number for the "pingRequests" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.PingRequests">
+            <summary>
+            Subject to use for PING requests
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.PingIntervalFieldNumber">
+            <summary>Field number for the "pingInterval" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.PingInterval">
+            <summary>
+            Interval at which client should send PINGs (expressed in seconds).
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.PingMaxOutFieldNumber">
+            <summary>Field number for the "pingMaxOut" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.PingMaxOut">
+            <summary>
+            Maximum number of PINGs without a response after which the connection can be considered lost
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.ProtocolFieldNumber">
+            <summary>Field number for the "protocol" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.Protocol">
+            <summary>
+            Protocol version the server is at
+            </summary>
+        </member>
+        <member name="F:STAN.Client.ConnectResponse.PublicKeyFieldNumber">
+            <summary>Field number for the "publicKey" field.</summary>
+        </member>
+        <member name="P:STAN.Client.ConnectResponse.PublicKey">
+            <summary>
+            Possibly used to sign acks, etc.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.Ping">
+            <summary>
+            PING from client to server
+            </summary>
+        </member>
+        <member name="F:STAN.Client.Ping.ConnIDFieldNumber">
+            <summary>Field number for the "connID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.Ping.ConnID">
+            <summary>
+            Connection ID
+            </summary>
+        </member>
+        <member name="T:STAN.Client.PingResponse">
+            <summary>
+            PING response from the server
+            </summary>
+        </member>
+        <member name="F:STAN.Client.PingResponse.ErrorFieldNumber">
+            <summary>Field number for the "error" field.</summary>
+        </member>
+        <member name="P:STAN.Client.PingResponse.Error">
+            <summary>
+            Error string, empty/omitted if no error
+            </summary>
+        </member>
+        <member name="T:STAN.Client.SubscriptionRequest">
+            <summary>
+            Protocol for a client to subscribe
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.ClientIDFieldNumber">
+            <summary>Field number for the "clientID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.ClientID">
+            <summary>
+            ClientID
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.SubjectFieldNumber">
+            <summary>Field number for the "subject" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.Subject">
+            <summary>
+            Formal subject to subscribe to, e.g. foo.bar
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.QGroupFieldNumber">
+            <summary>Field number for the "qGroup" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.QGroup">
+            <summary>
+            Optional queue group
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.InboxFieldNumber">
+            <summary>Field number for the "inbox" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.Inbox">
+            <summary>
+            Inbox subject to deliver messages on
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.MaxInFlightFieldNumber">
+            <summary>Field number for the "maxInFlight" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.MaxInFlight">
+            <summary>
+            Maximum inflight messages without an ack allowed
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.AckWaitInSecsFieldNumber">
+            <summary>Field number for the "ackWaitInSecs" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.AckWaitInSecs">
+            <summary>
+            Timeout for receiving an ack from the client
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.DurableNameFieldNumber">
+            <summary>Field number for the "durableName" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.DurableName">
+            <summary>
+            Optional durable name which survives client restarts
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.StartPositionFieldNumber">
+            <summary>Field number for the "startPosition" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.StartPosition">
+            <summary>
+            Start position
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.StartSequenceFieldNumber">
+            <summary>Field number for the "startSequence" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.StartSequence">
+            <summary>
+            Optional start sequence number
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionRequest.StartTimeDeltaFieldNumber">
+            <summary>Field number for the "startTimeDelta" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionRequest.StartTimeDelta">
+            <summary>
+            Optional start time
+            </summary>
+        </member>
+        <member name="T:STAN.Client.SubscriptionResponse">
+            <summary>
+            Response for SubscriptionRequest and UnsubscribeRequests
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionResponse.AckInboxFieldNumber">
+            <summary>Field number for the "ackInbox" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionResponse.AckInbox">
+            <summary>
+            ackInbox for sending acks
+            </summary>
+        </member>
+        <member name="F:STAN.Client.SubscriptionResponse.ErrorFieldNumber">
+            <summary>Field number for the "error" field.</summary>
+        </member>
+        <member name="P:STAN.Client.SubscriptionResponse.Error">
+            <summary>
+            err string, empty/omitted if no error
+            </summary>
+        </member>
+        <member name="T:STAN.Client.UnsubscribeRequest">
+            <summary>
+            Protocol for a clients to unsubscribe. Will return a SubscriptionResponse
+            </summary>
+        </member>
+        <member name="F:STAN.Client.UnsubscribeRequest.ClientIDFieldNumber">
+            <summary>Field number for the "clientID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.UnsubscribeRequest.ClientID">
+            <summary>
+            ClientID
+            </summary>
+        </member>
+        <member name="F:STAN.Client.UnsubscribeRequest.SubjectFieldNumber">
+            <summary>Field number for the "subject" field.</summary>
+        </member>
+        <member name="P:STAN.Client.UnsubscribeRequest.Subject">
+            <summary>
+            subject for the subscription
+            </summary>
+        </member>
+        <member name="F:STAN.Client.UnsubscribeRequest.InboxFieldNumber">
+            <summary>Field number for the "inbox" field.</summary>
+        </member>
+        <member name="P:STAN.Client.UnsubscribeRequest.Inbox">
+            <summary>
+            Inbox subject to identify subscription
+            </summary>
+        </member>
+        <member name="F:STAN.Client.UnsubscribeRequest.DurableNameFieldNumber">
+            <summary>Field number for the "durableName" field.</summary>
+        </member>
+        <member name="P:STAN.Client.UnsubscribeRequest.DurableName">
+            <summary>
+            Optional durable name which survives client restarts
+            </summary>
+        </member>
+        <member name="T:STAN.Client.CloseRequest">
+            <summary>
+            Protocol for a client to close a connection
+            </summary>
+        </member>
+        <member name="F:STAN.Client.CloseRequest.ClientIDFieldNumber">
+            <summary>Field number for the "clientID" field.</summary>
+        </member>
+        <member name="P:STAN.Client.CloseRequest.ClientID">
+            <summary>
+            Client name provided to Connect() requests
+            </summary>
+        </member>
+        <member name="T:STAN.Client.CloseResponse">
+            <summary>
+            Response for CloseRequest
+            </summary>
+        </member>
+        <member name="F:STAN.Client.CloseResponse.ErrorFieldNumber">
+            <summary>Field number for the "error" field.</summary>
+        </member>
+        <member name="P:STAN.Client.CloseResponse.Error">
+            <summary>
+            err string, empty/omitted if no error
+            </summary>
+        </member>
+        <member name="M:STAN.Client.Rx.RxExtensions.Observe(STAN.Client.IStanConnection,System.String)">
+            <summary>
+            Subscribes to the passed subject and returns a hot observable. Hence unless you
+            subscribe to the observable, no message will be handled and old messages will
+            not be delivered, only new messages.
+            </summary>
+            <param name="cn"></param>
+            <param name="subject"></param>
+            <returns></returns>
+        </member>
+        <member name="T:STAN.Client.StanAckHandlerArgs">
+            <summary>
+            This class is used with an acknowledgement event handler indicating 
+            a message has been acknoweledged by the STAN server.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanAckHandlerArgs.#ctor(System.String,System.String)">
+            <summary>
+            Constructor for generating StanConnLostHandler arguments.  Used only for application unit testing.
+            </summary>
+            <remarks>
+            Objects of this type are normally generated internally by the NATS streaming client.
+            This constructor has been provided to facilitate application unit testing.
+            </remarks>
+            <param name="guid">Message GUID</param>
+            <param name="error">An error generated by the NATS streaming server.</param>
+        </member>
+        <member name="P:STAN.Client.StanAckHandlerArgs.GUID">
+            <summary>
+            Contains the GUID of the acknowledged message.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanAckHandlerArgs.Error">
+            <summary>
+            Returns an error if applicable.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanConnectionFactory">
+            <summary>
+            Creates a connection to the NATS streaming server.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanConnectionFactory.CreateConnection(System.String,System.String,STAN.Client.StanOptions)">
+            <summary>
+            Creates a connection to the server.
+            </summary>
+            <param name="clusterID">The cluster ID of streaming server.</param>
+            <param name="clientID">A unique ID for this connection.</param>
+            <param name="options">Connection options.</param>
+            <exception cref="T:STAN.Client.StanConnectionException">Thrown when core NATS is unable to connect to a server.</exception>
+            <exception cref="T:STAN.Client.StanConnectRequestTimeoutException">Thrown when there is an invalid cluster id or other connectivity issues.</exception>
+            <returns>A connection to a streaming server.</returns>
+        </member>
+        <member name="M:STAN.Client.StanConnectionFactory.CreateConnection(System.String,System.String)">
+            <summary>
+            Creates a connection to the server.
+            </summary>
+            <param name="clusterID">The cluster ID of streaming server.</param>
+            <param name="clientID">A unique ID for this connection.</param>
+            <exception cref="T:STAN.Client.StanConnectionException">Thrown when core NATS is unable to connect to a server.</exception>
+            <exception cref="T:STAN.Client.StanConnectRequestTimeoutException">Thrown when there is an invalid cluster id or other connectivity issues.</exception>
+            <returns>A connection to a streaming server.</returns>
+        </member>
+        <member name="T:STAN.Client.StanConnLostHandlerArgs">
+            <summary>
+            This class is used with an acknowledgement event handler indicating 
+            a message has been acknowledged by the NATS Streaming server.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanConnLostHandlerArgs.#ctor(STAN.Client.IStanConnection,System.Exception)">
+            <summary>
+            Constructor for generating StanConnLostHandler arguments.  Used for application unit testing.
+            </summary>
+            <remarks>
+            Objects of this type are normally generated internally by the NATS streaming client.
+            This constructor has been provided to facilitate application unit testing.
+            </remarks>
+            <param name="connection">The NATS streming connection.</param>
+            <param name="exception">An exception indicating the error.</param>
+            <remarks>
+            Exceptions include the <see cref="T:STAN.Client.StanMaxPingsException"/>
+            and <see cref="T:STAN.Client.StanException"/>
+            </remarks>
+        </member>
+        <member name="P:STAN.Client.StanConnLostHandlerArgs.Connection">
+            <summary>
+            The connection to the NATS Streaming server.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanConnLostHandlerArgs.ConnectionException">
+            <summary>
+            The connection error if applicable, null otherwise.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanException">
+            <summary>
+            A general exception thrown by the NATS streaming server client.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanConnectRequestException">
+            <summary>
+            An exception representing the case when an error occurs in the connection request.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanCloseRequestException">
+            <summary>
+            An exception representing the case when an error occurs closing a connection.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanConnectionClosedException">
+            <summary>
+            An exception representing the case when an error occurs closing a connection.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanPublishAckTimeoutException">
+            <summary>
+            An exception representing the case when a publish times out waiting for an 
+            acknowledgement.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanBadSubscriptionException">
+            <summary>
+            An exception representing the case when an operation is performed on a subscription
+            that is no longer valid.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanTimeoutException">
+            <summary>
+            An exception representing the general case when an operation times out.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanConnectRequestTimeoutException">
+            <summary>
+            An exception representing the case when a streaming connection attempt
+            fails due to a mismatched cluster id or connectivity with a streaming
+            server.
+            </summary>
+            <remarks>
+            This is exception is thrown due to a mismatch between the cluster ID
+            of the client and the streaming server or when there is connectivity
+            with a core NATS server but not a streaming server.
+            </remarks>
+        </member>
+        <member name="T:STAN.Client.StanConnectionException">
+            <summary>
+            An exception representing the case when a connection cannot be established
+            with the NATS streaming server or an operation is attempted while the underlying
+            NATS connection is reconnecting.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanManualAckException">
+            <summary>
+            An exception representing the case when the application attempts 
+            to manually acknowledge a message while the subscriber is configured
+            to automatically acknowledge messages.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanNoServerSupport">
+            <summary>
+            An exception representing the case when the application attempts 
+            to manually acknowledge a message while the subscriber is configured
+            to automatically acknowledge messages.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanMaxPingsException">
+            <summary>
+            An exception indicating connectivity with the streaming server has 
+            been lost due to exceeding the maximum number of outstanding pings.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanMsg">
+            <summary>
+            A StanMsg object is a received NATS streaming message.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanMsg.#ctor(System.Byte[],System.Boolean,System.String,System.Int64,System.UInt64,STAN.Client.IStanSubscription)">
+            <summary>
+             Constructor for generating a StanMsg object.  Used only for application unit testing.
+            </summary>
+            <remarks>
+            Objects of this type are normally generated internally by the NATS streaming client.
+            This constructor has been provided to facilitate application unit testing.
+            </remarks>
+            <param name="data">The message payload.</param>
+            <param name="redelivered">True if the message may have been redelivered.</param>
+            <param name="subject">Subject of the message</param>
+            <param name="timestamp">Message timestamp, nanoseconds since epoch (1/1/1970)</param>
+            <param name="sequence">Sequence number of the message.</param>
+            <param name="subscription">Subscription of the message.  Must be a valid streaming subscription or null.</param>
+        </member>
+        <member name="P:STAN.Client.StanMsg.Time">
+            <summary>
+            Get the time stamp of the message represeneted as Unix nanotime.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanMsg.TimeStamp">
+            <summary>
+            Get the timestamp of the message.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanMsg.Ack">
+            <summary>
+            Acknowledge a message.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanMsg.Sequence">
+            <summary>
+            Gets the sequence number of a message.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanMsg.Subject">
+            <summary>
+            Gets the subject of the message.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanMsg.Data">
+            <summary>
+            Get the data field (payload) of a message.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanMsg.Redelivered">
+            <summary>
+            The redelivered property if true if this message has been redelivered, false otherwise.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanMsg.Subscription">
+            <summary>
+            Gets the subscription this message was received upon.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanMsgHandlerArgs">
+            <summary>
+            Arguments passed to the StanMsgHandler.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanMsgHandlerArgs.#ctor(System.Byte[],System.Boolean,System.String,System.Int64,System.UInt64,STAN.Client.IStanSubscription)">
+            <summary>
+             Constructor for generating a StanMsgHandlerArgs object.  Used for application unit testing.
+            </summary>
+            <remarks>
+            Objects of this type are normally generated internally by the NATS streaming client.
+            This constructor has been provided to facilitate application unit testing.
+            </remarks>
+            <param name="data">The message payload.</param>
+            <param name="redelivered">True if the message may have been redelivered.</param>
+            <param name="subject">Subject of the message.</param>
+            <param name="timestamp">Message timestamp, nanoseconds since epoch.(1/1/1970)</param>
+            <param name="sequence">Sequence number of the message.</param>
+            <param name="subscription">Subscription of the message.  Must be a valid streaming subscription or null.</param>
+        </member>
+        <member name="M:STAN.Client.StanMsgHandlerArgs.#ctor(STAN.Client.StanMsg)">
+            <summary>
+            Constructor for generating a StanMsgHandlerArgs object.  Used for application unit testing. 
+            </summary>
+            <param name="m">A NATS streaming message.</param>
+        </member>
+        <member name="P:STAN.Client.StanMsgHandlerArgs.Message">
+            <summary>
+            The received message.
+            </summary>
+        </member>
+        <member name="T:STAN.Client.StanSubscriptionOptions">
+            <summary>
+            The StanSubsciption options class represents various options available
+            to configure a subscription to a subject on the NATS streaming server.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanSubscriptionOptions.DurableName">
+            <summary>
+            DurableName, if set will survive client restarts.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanSubscriptionOptions.MaxInflight">
+            <summary>
+            Controls the number of messages the cluster will have inflight without an ACK.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanSubscriptionOptions.AckWait">
+            <summary>
+            Controls the time the cluster will wait for an ACK for a given message in milliseconds.
+            </summary>
+            <remarks>
+            The value must be at least one second.
+            </remarks>
+        </member>
+        <member name="P:STAN.Client.StanSubscriptionOptions.ManualAcks">
+            <summary>
+            Controls the time the cluster will wait for an ACK for a given message.
+            </summary>
+        </member>
+        <member name="P:STAN.Client.StanSubscriptionOptions.LeaveOpen">
+            <summary>
+            Do Close() on Disposing subscription if true, or Unsubscribe(). If you want to resume subscription with durable name, set true.
+            </summary>
+            <remarks>
+            If Close() or Unsubscribe() is called before Disposing, this flag has no effect
+            </remarks>
+        </member>
+        <member name="M:STAN.Client.StanSubscriptionOptions.StartAt(System.UInt64)">
+            <summary>
+            Optional start sequence number.
+            </summary>
+            <param name="sequence"></param>
+        </member>
+        <member name="M:STAN.Client.StanSubscriptionOptions.StartAt(System.DateTime)">
+            <summary>
+            Optional start time.  UTC is recommended although a local time will be converted to UTC.
+            </summary>
+            <param name="time"></param>
+        </member>
+        <member name="M:STAN.Client.StanSubscriptionOptions.StartAt(System.TimeSpan)">
+            <summary>
+            Optional start at time delta.
+            </summary>
+            <param name="duration"></param>
+        </member>
+        <member name="M:STAN.Client.StanSubscriptionOptions.StartWithLastReceived">
+            <summary>
+            Start with the last received message.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanSubscriptionOptions.DeliverAllAvailable">
+            <summary>
+            Deliver all messages available.
+            </summary>
+        </member>
+        <member name="M:STAN.Client.StanSubscriptionOptions.GetDefaultOptions">
+            <summary>
+            Returns a copy of the default subscription options.
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

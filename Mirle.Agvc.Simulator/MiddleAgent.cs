@@ -44,7 +44,8 @@ namespace Mirle.Agvc.Simulator
 
         SCApplication scApp = null;
 
-        
+        public string CycleMove_To_Address = "";
+        public bool IsSync_Running = false;
 
         public MiddleAgent(MiddlerConfigs middlerConfigs)
         {

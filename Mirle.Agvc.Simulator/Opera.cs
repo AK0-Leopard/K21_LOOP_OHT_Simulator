@@ -166,6 +166,10 @@ namespace Mirle.Agvc.Simulator
                     ChangeTheAddressSectionToUnloadAddress(transRequest);
                     Send_Cmd132_TransferCompleteReport(transRequest);
                     break;
+                case ActiveType.Cyclemove:
+                    ChangeTheAddressSectionToUnloadAddress(transRequest);
+                    Send_Cmd132_TransferCompleteReport(transRequest);
+                    break;
                 case ActiveType.Load:
                     LoadProcess(transRequest);
                     Send_Cmd136_TransferEventReport(EventType.Bcrread, true, transRequest);
@@ -534,7 +538,7 @@ namespace Mirle.Agvc.Simulator
 
                         //Send_Cmd144_StatusChangeReport(false);
                         Send_Cmd134_TransferEventReport();
-                        SpinWait.SpinUntil(() => false, 3000);
+                        SpinWait.SpinUntil(() => false, 2000);
 
                         sectionAddressCount++;
                     }
@@ -547,9 +551,15 @@ namespace Mirle.Agvc.Simulator
 
                         return;
                     }
+
+                    if (agent.CycleMove_To_Address.Equals(transRequest.GuideAddressToDestination[sectionAddressCount]))
+                    {
+                        sectionAddressCount = transRequest.GuideSectionsToDestination.Count;
+                        continue;
+                    }
                 }
 
-                theVehicleInfo.CurrentAdrID = transRequest.ToAdr;
+                /*theVehicleInfo.CurrentAdrID = transRequest.ToAdr;
                 theVehicleInfo.CurrentSecID = transRequest.GuideSectionsToDestination[sectionAddressCount - 1];
                 theVehicleInfo.ActionStatus = VHActionStatus.NoCommand;
 
@@ -557,7 +567,7 @@ namespace Mirle.Agvc.Simulator
 
                 Send_Cmd144_StatusChangeReport(false);
                 Send_Cmd134_TransferEventReport();
-                SpinWait.SpinUntil(() => false, 500);
+                SpinWait.SpinUntil(() => false, 500);*/
             }
         }
 
@@ -656,12 +666,49 @@ namespace Mirle.Agvc.Simulator
                 wrappers.TransEventRep = iD_134_TRANS_EVENT_REP;
 
                 ServerClientAgent.TrxTcpIp.SendGoogleMsg(wrappers);
+
+                AddressData addressData = scApp.AddressDataBLL.loadAddressByID(theVehicleInfo.CurrentAdrID);
+                if (addressData.SNED_ZONE.Equals("Y")) {
+                    Send_Cmd136_ZoneCommandReq(EventType.ZoneCommandReq);
+                    if (!recent36Response.ZoneCommandPortID.Trim().Equals(""))
+                    {
+                        agent.CycleMove_To_Address = recent36Response.ZoneCommandPortID;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 var msg = ex.StackTrace;
             }
         }
+
+        private void Send_Cmd136_ZoneCommandReq(EventType eventType)
+        {
+            try
+            {
+                ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
+                ID_36_TRANS_EVENT_RESPONSE iD_36_TRANS_EVENT_RESPONSE = new ID_36_TRANS_EVENT_RESPONSE();
+
+                iD_136_TRANS_EVENT_REP.EventType = eventType;
+                iD_136_TRANS_EVENT_REP.CurrentAdrID = theVehicleInfo.CurrentAdrID;
+                iD_136_TRANS_EVENT_REP.CurrentSecID = theVehicleInfo.CurrentSecID;
+                iD_136_TRANS_EVENT_REP.SecDistance = 0;
+                //iD_136_TRANS_EVENT_REP.ZoneCommandID = "123";
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.ImpTransEventRepFieldNumber;
+                wrappers.ImpTransEventRep = iD_136_TRANS_EVENT_REP;
+
+                SendCommandWrapper(wrappers, out iD_36_TRANS_EVENT_RESPONSE, false);
+                recent36Response = iD_36_TRANS_EVENT_RESPONSE;
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+        }
+
+
         private void Send_Cmd136_TransferEventReport(EventType eventType, bool isCmd = false,
                                 ID_31_TRANS_REQUEST now31Cmd = null, BCRReadResult bCRReadResult = BCRReadResult.BcrNormal)
         {
@@ -846,6 +893,14 @@ namespace Mirle.Agvc.Simulator
                             {
                                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = CompleteStatus.CmpStatusMove;
                                 setEmptyCarrier132(iD_132_TRANS_COMPLETE_REPORT);
+                            }
+                            break;
+                        case ActiveType.Cyclemove:
+                            if (cMDCancelType == CMDCancelType.CmdNone)
+                            {
+                                iD_132_TRANS_COMPLETE_REPORT.CmpStatus = CompleteStatus.CmpStatusCycleMove;
+                                setEmptyCarrier132(iD_132_TRANS_COMPLETE_REPORT);
+                                agent.CycleMove_To_Address = "";
                             }
                             break;
                         case ActiveType.Load:

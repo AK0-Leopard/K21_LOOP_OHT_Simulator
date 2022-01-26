@@ -15,6 +15,7 @@ using GenericParsing;
 using com.mirle.ibg3k0.sc.Data.DAO;
 using com.mirle.ibg3k0.sc.BLL;
 using Mirle.Agvc.Simulator;
+using com.mirle.ibg3k0.sc.Data.VO;
 
 namespace com.mirle.ibg3k0.sc.App
 {
@@ -29,16 +30,26 @@ namespace com.mirle.ibg3k0.sc.App
         private BlockDataDao blockDataDao = null;
         public BlockDataDao BlockDataDao { get { return blockDataDao; } }
 
+        private AddressDataDao addressDataDao = null;
+        public AddressDataDao AddressDataDao { get { return addressDataDao; } }
+
         //BLL
         private BlockDataBLL blockDataBLL = null;
         public BlockDataBLL BlockDataBLL { get { return blockDataBLL; } }
 
+        private AddressDataBLL addressDataBLL = null;
+        public AddressDataBLL AddressDataBLL { get { return addressDataBLL; } }
+
         private DataTable blockData = null;
         public DataTable BlockData { get { return blockData; } }
+
+        private DataTable addressData = null;
+        public DataTable AddressData { get { return addressData; } }
 
         public Dictionary<string, MiddleAgent> AgentDic = new Dictionary<string, MiddleAgent>();
         public Dictionary<string, string> VhAddressDic = new Dictionary<string, string>();  //<Remote Port, Address>
 
+        public AddressData address = null;
 
         private SCApplication()
         {
@@ -66,8 +77,11 @@ namespace com.mirle.ibg3k0.sc.App
         {
             blockDataDao = new BlockDataDao();
             blockDataBLL = new BlockDataBLL();
+            addressDataDao = new AddressDataDao();
+            addressDataBLL = new AddressDataBLL();
 
             blockDataBLL.start(this);
+            addressDataBLL.start(this);
 
             loadBlockDataConfig();
         }
@@ -75,6 +89,7 @@ namespace com.mirle.ibg3k0.sc.App
         public void loadBlockDataConfig()
         {
             loadCSVToDataTable(ref blockData, "BLOCKDATA");
+            loadCSVToDataTable(ref addressData, "ADDRESSDATA");
         }
 
         private void loadCSVToDataTable(ref DataTable dt, string tableName)

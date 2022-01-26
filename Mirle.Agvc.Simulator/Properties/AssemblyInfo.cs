@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // 組件的一般資訊是由下列的屬性集控制。
 // 變更這些屬性的值即可修改組件的相關
 // 資訊。
-[assembly: AssemblyTitle("Mirle.Agvc.Simulator")]
+[assembly: AssemblyTitle("Mirle.K21.LOOP.OHTSimulator")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("HP Inc.")]
-[assembly: AssemblyProduct("Mirle.Agvc.Simulator")]
-[assembly: AssemblyCopyright("Copyright © HP Inc. 2019")]
+[assembly: AssemblyCompany("Mirele Inc.")]
+[assembly: AssemblyProduct("Mirle.K21.LOOP.OHTSimulator")]
+[assembly: AssemblyCopyright("Copyright © Mirele Inc. 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

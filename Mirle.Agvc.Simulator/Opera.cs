@@ -167,8 +167,8 @@ namespace Mirle.Agvc.Simulator
                     Send_Cmd132_TransferCompleteReport(transRequest);
                     break;
                 case ActiveType.Cyclemove:
-                    ChangeTheAddressSectionToUnloadAddress(transRequest);
-                    Send_Cmd132_TransferCompleteReport(transRequest);
+                    agent.IsCycleMove = true;
+                    ChangeTheAddressSectionByCycleMoveMode();
                     break;
                 case ActiveType.Load:
                     LoadProcess(transRequest);
@@ -551,12 +551,6 @@ namespace Mirle.Agvc.Simulator
 
                         return;
                     }
-
-                    if (agent.CycleMove_To_Address.Equals(transRequest.GuideAddressToDestination[sectionAddressCount]))
-                    {
-                        sectionAddressCount = transRequest.GuideSectionsToDestination.Count;
-                        continue;
-                    }
                 }
 
                 /*theVehicleInfo.CurrentAdrID = transRequest.ToAdr;
@@ -568,6 +562,38 @@ namespace Mirle.Agvc.Simulator
                 Send_Cmd144_StatusChangeReport(false);
                 Send_Cmd134_TransferEventReport();
                 SpinWait.SpinUntil(() => false, 500);*/
+            }
+        }
+
+        private void ChangeTheAddressSectionByCycleMoveMode()
+        {
+            if (!theVehicleInfo.CurrentAdrID.Trim().Equals("") || !theVehicleInfo.CurrentSecID.Trim().Equals(""))
+            {
+                while (agent.IsCycleMove) {
+                    SectionData cur_section = scApp.SectionDataBLL.loadSectionByID(theVehicleInfo.CurrentSecID);
+                    SectionData next_section = scApp.SectionDataBLL.loadSectionByFrom_Add_ID(cur_section.TO_ADR_ID);
+
+                    if (!scApp.checkVhAddress(agent.RemotePort().ToString(), cur_section.TO_ADR_ID))
+                    {
+                        SpinWait.SpinUntil(() => false, 2000);
+                    }
+                    else {
+                        string[] reserveSections = { next_section.SEC_ID };
+                        DriveDirction[] reserveDirection = { DriveDirction.DriveDirForward };
+
+                        Send_Cmd136_TransferEventReserveReport(EventType.ReserveReq, reserveSections, reserveDirection, false);
+                        if (recent36Response.IsReserveSuccess == ReserveResult.Success)
+                        {
+                            theVehicleInfo.CurrentSecID = next_section.SEC_ID;
+                            theVehicleInfo.CurrentAdrID = next_section.TO_ADR_ID;
+
+                            scApp.updateVhAddress(agent.RemotePort().ToString(), theVehicleInfo.CurrentAdrID);
+
+                            Send_Cmd134_TransferEventReport();
+                            SpinWait.SpinUntil(() => false, 1000);
+                        }
+                    }
+                }
             }
         }
 
@@ -666,15 +692,6 @@ namespace Mirle.Agvc.Simulator
                 wrappers.TransEventRep = iD_134_TRANS_EVENT_REP;
 
                 ServerClientAgent.TrxTcpIp.SendGoogleMsg(wrappers);
-
-                AddressData addressData = scApp.AddressDataBLL.loadAddressByID(theVehicleInfo.CurrentAdrID);
-                if (addressData.SNED_ZONE.Equals("Y")) {
-                    Send_Cmd136_ZoneCommandReq(EventType.ZoneCommandReq);
-                    if (!recent36Response.ZoneCommandPortID.Trim().Equals(""))
-                    {
-                        agent.CycleMove_To_Address = recent36Response.ZoneCommandPortID;
-                    }
-                }
             }
             catch (Exception ex)
             {
@@ -900,7 +917,7 @@ namespace Mirle.Agvc.Simulator
                             {
                                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = CompleteStatus.CmpStatusCycleMove;
                                 setEmptyCarrier132(iD_132_TRANS_COMPLETE_REPORT);
-                                agent.CycleMove_To_Address = "";
+                                agent.IsCycleMove = false;
                             }
                             break;
                         case ActiveType.Load:

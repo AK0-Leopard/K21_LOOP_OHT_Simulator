@@ -33,6 +33,8 @@ namespace com.mirle.ibg3k0.sc.App
         private AddressDataDao addressDataDao = null;
         public AddressDataDao AddressDataDao { get { return addressDataDao; } }
 
+        private SectionDataDao sectionDataDao = null;
+        public SectionDataDao SectionDataDao { get { return sectionDataDao; } }
         //BLL
         private BlockDataBLL blockDataBLL = null;
         public BlockDataBLL BlockDataBLL { get { return blockDataBLL; } }
@@ -40,11 +42,17 @@ namespace com.mirle.ibg3k0.sc.App
         private AddressDataBLL addressDataBLL = null;
         public AddressDataBLL AddressDataBLL { get { return addressDataBLL; } }
 
+        private SectionDataBLL sectionDataBLL = null;
+        public SectionDataBLL SectionDataBLL { get { return sectionDataBLL; } }
+
         private DataTable blockData = null;
         public DataTable BlockData { get { return blockData; } }
 
         private DataTable addressData = null;
         public DataTable AddressData { get { return addressData; } }
+
+        private DataTable sectionData = null;
+        public DataTable SectionData { get { return sectionData; } }
 
         public Dictionary<string, MiddleAgent> AgentDic = new Dictionary<string, MiddleAgent>();
         public Dictionary<string, string> VhAddressDic = new Dictionary<string, string>();  //<Remote Port, Address>
@@ -79,9 +87,12 @@ namespace com.mirle.ibg3k0.sc.App
             blockDataBLL = new BlockDataBLL();
             addressDataDao = new AddressDataDao();
             addressDataBLL = new AddressDataBLL();
+            sectionDataDao = new SectionDataDao();
+            sectionDataBLL = new SectionDataBLL();
 
             blockDataBLL.start(this);
             addressDataBLL.start(this);
+            sectionDataBLL.start(this);
 
             loadBlockDataConfig();
         }
@@ -90,6 +101,7 @@ namespace com.mirle.ibg3k0.sc.App
         {
             loadCSVToDataTable(ref blockData, "BLOCKDATA");
             loadCSVToDataTable(ref addressData, "ADDRESSDATA");
+            loadCSVToDataTable(ref sectionData, "SECTIONDATA");
         }
 
         private void loadCSVToDataTable(ref DataTable dt, string tableName)

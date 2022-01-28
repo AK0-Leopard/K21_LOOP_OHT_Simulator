@@ -112,7 +112,10 @@
   <ItemGroup>
     <Compile Include="App\SCApplication.cs" />
     <Compile Include="CmdQueue.cs" />
+    <Compile Include="Data\SectionData.cs" />
     <Compile Include="Data\AddressData.cs" />
+    <Compile Include="Data\SectionDataBLL.cs" />
+    <Compile Include="Data\SectionDataDao.cs" />
     <Compile Include="Data\BlockData.cs" />
     <Compile Include="Data\AddressDataBLL.cs" />
     <Compile Include="Data\BlockDataBLL.cs" />
@@ -155,6 +158,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Config\SECTIONDATA.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Config\ADDRESSDATA.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

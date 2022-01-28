@@ -39,8 +39,8 @@ namespace Mirle.Agvc.Simulator
             {
                 #region set the data into the vehicl class object
                 //
-                vehicle_Data.CurrentAdrID = "10015";
-                vehicle_Data.CurrentSecID = "01015";
+                vehicle_Data.CurrentAdrID = "10242";
+                vehicle_Data.CurrentSecID = "30130";
                 vehicle_Data.ModeStatus = VHModeStatus.AutoRemote;
                 vehicle_Data.ActionStatus = VHActionStatus.NoCommand;
                 vehicle_Data.PowerStatus = VhPowerStatus.PowerOn;

@@ -960,3 +960,4 @@ C:\Users\lashellow\Documents\GitHub\K21_LOOP_OHT_Simulator\Mirle.Agvc.Simulator\
 C:\Users\lashellow\Documents\GitHub\K21_LOOP_OHT_Simulator\Mirle.Agvc.Simulator\bin\Debug\TCPIPTrxControl.dll.config
 C:\Users\lashellow\Documents\GitHub\K21_LOOP_OHT_Simulator\Mirle.Agvc.Simulator\obj\Debug\Mirle.OHT_OHBC.Simulator.csproj.CopyComplete
 C:\Users\lashellow\Documents\GitHub\K21_LOOP_OHT_Simulator\Mirle.Agvc.Simulator\bin\Debug\Config\ADDRESSDATA.csv
+C:\Users\lashellow\Documents\GitHub\K21_LOOP_OHT_Simulator\Mirle.Agvc.Simulator\bin\Debug\Config\SECTIONDATA.csv

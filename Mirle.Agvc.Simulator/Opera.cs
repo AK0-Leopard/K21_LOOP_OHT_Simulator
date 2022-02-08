@@ -168,6 +168,8 @@ namespace Mirle.Agvc.Simulator
                     break;
                 case ActiveType.Cyclemove:
                     agent.IsCycleMove = true;
+                    SetVehicleStatus(VHActionStatus.Commanding);
+                    Send_Cmd144_StatusChangeReport(false);
                     ChangeTheAddressSectionByCycleMoveMode(transRequest);
                     break;
                 case ActiveType.Load:
@@ -599,7 +601,7 @@ namespace Mirle.Agvc.Simulator
                             scApp.updateVhAddress(agent.RemotePort().ToString(), theVehicleInfo.CurrentAdrID);
 
                             Send_Cmd134_TransferEventReport();
-                            SpinWait.SpinUntil(() => false, 1000);
+                            SpinWait.SpinUntil(() => false, 500);
 
                             if (!agent.destination.Equals(string.Empty) && theVehicleInfo.CurrentAdrID.Equals(agent.destination))
                             {
@@ -609,12 +611,16 @@ namespace Mirle.Agvc.Simulator
                                 break;
                             }
 
-                            AddressData addressData = scApp.AddressDataBLL.loadAddressByID(theVehicleInfo.CurrentAdrID);
-                            if (addressData.SNED_ZONE.Equals("Y") && addressData.ZONE_ID != null)
+                            if (agent.destination.Equals(string.Empty))
                             {
-                                Send_Cmd136_ZoneCommandReq(EventType.ZoneCommandReq, addressData.ZONE_ID);
-                                if (!recent36Response.ZoneCommandPortID.Trim().Equals("")) {
-                                    agent.destination = recent36Response.RenameLOTID;
+                                AddressData addressData = scApp.AddressDataBLL.loadAddressByID(theVehicleInfo.CurrentAdrID);
+                                if (addressData.SNED_ZONE.Equals("Y") && addressData.ZONE_ID != null)
+                                {
+                                    Send_Cmd136_ZoneCommandReq(EventType.ZoneCommandReq, addressData.ZONE_ID);
+                                    if (!recent36Response.ZoneCommandPortID.Trim().Equals(""))
+                                    {
+                                        agent.destination = recent36Response.RenameLOTID;
+                                    }
                                 }
                             }
 

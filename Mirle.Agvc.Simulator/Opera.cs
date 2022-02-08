@@ -580,8 +580,13 @@ namespace Mirle.Agvc.Simulator
                         theVehicleInfo.ActionStatus = VHActionStatus.NoCommand;
                         Send_Cmd144_StatusChangeReport(false);
                         Send_Cmd134_TransferEventReport();
-
                         break;
+                    }
+                    
+                    if (agent.IsPaused)
+                    {
+                        SpinWait.SpinUntil(() => false, 2000);
+                        continue;
                     }
 
                     if (!scApp.checkVhAddress(agent.RemotePort().ToString(), cur_section.TO_ADR_ID))
@@ -637,7 +642,7 @@ namespace Mirle.Agvc.Simulator
             {
                 for (int sectionAddressCount = 0; sectionAddressCount < transRequest.GuideSectionsStartToLoad.Count;)
                 {
-                    if (!scApp.checkVhAddress(agent.RemotePort().ToString(), transRequest.GuideAddressStartToLoad[sectionAddressCount]))
+                    if (!scApp.checkVhAddress(agent.RemotePort().ToString(), transRequest.GuideAddressStartToLoad[sectionAddressCount]) || agent.IsPaused)
                     {
                         SpinWait.SpinUntil(() => false, 2000);
                         continue;

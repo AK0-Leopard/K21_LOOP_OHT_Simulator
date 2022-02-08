@@ -47,7 +47,7 @@ namespace Mirle.Agvc.Simulator
         public bool IsCycleMove = false;
         public bool IsSync_Running = false;
         public string destination = string.Empty;
-
+        public bool IsPaused = false;
 
         public MiddleAgent(MiddlerConfigs middlerConfigs)
         {
@@ -1839,6 +1839,10 @@ namespace Mirle.Agvc.Simulator
         {
             ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
             //TODO: Pause/Continue+/Reserve
+            if(receive.EventType == PauseEvent.Pause)
+                IsPaused = true;
+            else
+                IsPaused = false;
 
             int replyCode = 0;
             Send_Cmd139_PauseResponse(e.iSeqNum, replyCode);

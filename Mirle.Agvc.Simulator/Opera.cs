@@ -572,8 +572,11 @@ namespace Mirle.Agvc.Simulator
             if (!theVehicleInfo.CurrentAdrID.Trim().Equals("") || !theVehicleInfo.CurrentSecID.Trim().Equals(""))
             {
                 while (agent.IsCycleMove) {
-                    SectionData cur_section = scApp.SectionDataBLL.loadSectionByID(theVehicleInfo.CurrentSecID);
-                    SectionData next_section = scApp.SectionDataBLL.loadSectionByFrom_Add_ID(cur_section.TO_ADR_ID);
+                    if (agent.IsPaused)
+                    {
+                        SpinWait.SpinUntil(() => false, 1000);
+                        continue;
+                    }
 
                     if (cmdCanceltype == CMDCancelType.CmdCancel || cmdCanceltype == CMDCancelType.CmdAbort)
                     {
@@ -582,12 +585,9 @@ namespace Mirle.Agvc.Simulator
                         Send_Cmd134_TransferEventReport();
                         break;
                     }
-                    
-                    if (agent.IsPaused)
-                    {
-                        SpinWait.SpinUntil(() => false, 2000);
-                        continue;
-                    }
+
+                    SectionData cur_section = scApp.SectionDataBLL.loadSectionByID(theVehicleInfo.CurrentSecID);
+                    SectionData next_section = scApp.SectionDataBLL.loadSectionByFrom_Add_ID(cur_section.TO_ADR_ID);
 
                     if (!scApp.checkVhAddress(agent.RemotePort().ToString(), cur_section.TO_ADR_ID))
                     {

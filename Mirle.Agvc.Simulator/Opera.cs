@@ -478,7 +478,7 @@ namespace Mirle.Agvc.Simulator
         {
             if (transRequest.GuideAddressStartToLoad.Count > 0)
             {
-                if (!scApp.isMatche(transRequest.GuideAddressStartToLoad[0], theVehicleInfo.CurrentAdrID))
+                if (!scApp.isMatche(transRequest.GuideAddressStartToLoad[transRequest.GuideAddressStartToLoad.Count - 1], theVehicleInfo.CurrentAdrID))
                 {
                     ChangeTheAddressSectionToLoadAddress(transRequest);
                 }

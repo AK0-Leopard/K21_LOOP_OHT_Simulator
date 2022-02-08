@@ -16,6 +16,7 @@ using com.mirle.ibg3k0.sc.Data.DAO;
 using com.mirle.ibg3k0.sc.BLL;
 using Mirle.Agvc.Simulator;
 using com.mirle.ibg3k0.sc.Data.VO;
+using com.mirle.ibg3k0.WpfTools;
 
 namespace com.mirle.ibg3k0.sc.App
 {
@@ -54,10 +55,14 @@ namespace com.mirle.ibg3k0.sc.App
         private DataTable sectionData = null;
         public DataTable SectionData { get { return sectionData; } }
 
+        public DataTable WebApiIpMap = null;
+
         public Dictionary<string, MiddleAgent> AgentDic = new Dictionary<string, MiddleAgent>();
         public Dictionary<string, string> VhAddressDic = new Dictionary<string, string>();  //<Remote Port, Address>
 
         public AddressData address = null;
+
+        public MirleGoUiApp mgoApp;
 
         private SCApplication()
         {
@@ -94,14 +99,17 @@ namespace com.mirle.ibg3k0.sc.App
             addressDataBLL.start(this);
             sectionDataBLL.start(this);
 
-            loadBlockDataConfig();
+            loadDataConfig();
+
+            mgoApp = getMirleGoUIApp();
         }
 
-        public void loadBlockDataConfig()
+        public void loadDataConfig()
         {
             loadCSVToDataTable(ref blockData, "BLOCKDATA");
             loadCSVToDataTable(ref addressData, "ADDRESSDATA");
             loadCSVToDataTable(ref sectionData, "SECTIONDATA");
+            loadCSVToDataTable(ref WebApiIpMap, "WEBAPIIPTABLE");
         }
 
         private void loadCSVToDataTable(ref DataTable dt, string tableName)
@@ -372,6 +380,54 @@ namespace com.mirle.ibg3k0.sc.App
 
             return false;
         }
+
+        public MirleGoUiApp getMirleGoUIApp()
+        {
+            MirleGoUiApp mgoApp_BC = null;
+            try
+            {
+                WebApiIp WebApiIpVo = getIpByLineID("B7_OHBLINE3");
+                if (WebApiIpVo != null)
+                {
+                    mgoApp_BC = MirleGoUiApiApp.getInstance("AMHS", "B7_OHBLINE3", WebApiIpVo.NATS_IP, WebApiIpVo.NANCY_IP, WebApiIpVo.ELASTIC_IP);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Exception");
+            }
+            return mgoApp_BC;
+        }
+
+        public WebApiIp getIpByLineID(string sLineId)
+        {
+            WebApiIp webApiIpVo = null;
+            try
+            {
+                lock (WebApiIpMap)
+                {
+                    if (WebApiIpMap != null)
+                    {
+                        var query = from c in WebApiIpMap.AsEnumerable()
+                                    where c.Field<string>("LINE_ID").Trim() == sLineId.Trim()
+                                    select new WebApiIp
+                                    {
+                                        Line_ID = c.Field<string>("Line_ID"),
+                                        NANCY_IP = c.Field<string>("NANCY_IP"),
+                                        ELASTIC_IP = c.Field<string>("ELASTIC_IP"),
+                                        NATS_IP = c.Field<string>("NATS_IP"),
+                                    };
+                        webApiIpVo = query.SingleOrDefault();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex);
+            }
+            return webApiIpVo;
+        }
+
     }
 }
 

@@ -46,6 +46,8 @@ namespace Mirle.Agvc.Simulator
 
         public bool IsCycleMove = false;
         public bool IsSync_Running = false;
+        public string destination = string.Empty;
+
 
         public MiddleAgent(MiddlerConfigs middlerConfigs)
         {

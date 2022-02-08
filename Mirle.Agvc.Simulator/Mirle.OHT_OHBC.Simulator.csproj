@@ -52,6 +52,10 @@
     <Reference Include="Grpc.Core.Api, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d754f35622e28bad, processorArchitecture=MSIL">
       <HintPath>..\packages\Grpc.Core.Api.2.43.0\lib\net45\Grpc.Core.Api.dll</HintPath>
     </Reference>
+    <Reference Include="MirleGoWpfTools, Version=1.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLL\MirleGoWpfTools.dll</HintPath>
+    </Reference>
     <Reference Include="Nancy, Version=1.4.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nancy.1.4.5\lib\net40\Nancy.dll</HintPath>
     </Reference>
@@ -121,6 +125,7 @@
     <Compile Include="Data\BlockDataBLL.cs" />
     <Compile Include="Data\AddressDataDao.cs" />
     <Compile Include="Data\BlockDataDao.cs" />
+    <Compile Include="Data\VO\WebApiIp.cs" />
     <Compile Include="Global_Param.cs" />
     <Compile Include="Opera.cs" />
     <Compile Include="ProtocolFormat\Ohtmessage.cs" />
@@ -167,6 +172,9 @@
     <None Include="Config\BLOCKDATA.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Config\WEBAPIIPTABLE.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="DLL\TCPIPTrxControl.dll.config" />
     <None Include="NLog.config" />
     <None Include="packages.config" />
@@ -189,6 +197,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="DLL\Logrila.Logging.dll" />
+    <Content Include="DLL\MirleGoWpfTools.dll" />
     <Content Include="DLL\TCPIPTrxControl.dll" />
     <Content Include="DLL\TCPIPTrxControl.pdb" />
   </ItemGroup>

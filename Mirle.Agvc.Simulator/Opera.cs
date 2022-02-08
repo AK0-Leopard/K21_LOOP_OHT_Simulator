@@ -168,7 +168,7 @@ namespace Mirle.Agvc.Simulator
                     break;
                 case ActiveType.Cyclemove:
                     agent.IsCycleMove = true;
-                    ChangeTheAddressSectionByCycleMoveMode();
+                    ChangeTheAddressSectionByCycleMoveMode(transRequest);
                     break;
                 case ActiveType.Load:
                     LoadProcess(transRequest);
@@ -565,13 +565,22 @@ namespace Mirle.Agvc.Simulator
             }
         }
 
-        private void ChangeTheAddressSectionByCycleMoveMode()
+        private void ChangeTheAddressSectionByCycleMoveMode(ID_31_TRANS_REQUEST transRequest)
         {
             if (!theVehicleInfo.CurrentAdrID.Trim().Equals("") || !theVehicleInfo.CurrentSecID.Trim().Equals(""))
             {
                 while (agent.IsCycleMove) {
                     SectionData cur_section = scApp.SectionDataBLL.loadSectionByID(theVehicleInfo.CurrentSecID);
                     SectionData next_section = scApp.SectionDataBLL.loadSectionByFrom_Add_ID(cur_section.TO_ADR_ID);
+
+                    if (cmdCanceltype == CMDCancelType.CmdCancel || cmdCanceltype == CMDCancelType.CmdAbort)
+                    {
+                        theVehicleInfo.ActionStatus = VHActionStatus.NoCommand;
+                        Send_Cmd144_StatusChangeReport(false);
+                        Send_Cmd134_TransferEventReport();
+
+                        break;
+                    }
 
                     if (!scApp.checkVhAddress(agent.RemotePort().ToString(), cur_section.TO_ADR_ID))
                     {
@@ -591,6 +600,24 @@ namespace Mirle.Agvc.Simulator
 
                             Send_Cmd134_TransferEventReport();
                             SpinWait.SpinUntil(() => false, 1000);
+
+                            if (!agent.destination.Equals(string.Empty) && theVehicleInfo.CurrentAdrID.Equals(agent.destination))
+                            {
+                                theVehicleInfo.CmdID = transRequest.CmdID.Trim();
+                                SetVehicleStatus(VHActionStatus.NoCommand);
+                                Send_Cmd132_TransferCompleteReport(transRequest);
+                                break;
+                            }
+
+                            AddressData addressData = scApp.AddressDataBLL.loadAddressByID(theVehicleInfo.CurrentAdrID);
+                            if (addressData.SNED_ZONE.Equals("Y") && addressData.ZONE_ID != null)
+                            {
+                                Send_Cmd136_ZoneCommandReq(EventType.ZoneCommandReq, addressData.ZONE_ID);
+                                if (!recent36Response.ZoneCommandPortID.Trim().Equals("")) {
+                                    agent.destination = recent36Response.RenameLOTID;
+                                }
+                            }
+
                         }
                     }
                 }
@@ -676,6 +703,7 @@ namespace Mirle.Agvc.Simulator
             double VhYAxis = Convert.ToDouble(blockData.YAxis);
             double VhAngle = Convert.ToDouble(blockData.Angle);
 
+
             try
             {
                 ID_134_TRANS_EVENT_REP iD_134_TRANS_EVENT_REP = new ID_134_TRANS_EVENT_REP();
@@ -699,17 +727,18 @@ namespace Mirle.Agvc.Simulator
             }
         }
 
-        private void Send_Cmd136_ZoneCommandReq(EventType eventType)
+        private void Send_Cmd136_ZoneCommandReq(EventType eventType,String Zone_ID)
         {
             try
             {
                 ID_136_TRANS_EVENT_REP iD_136_TRANS_EVENT_REP = new ID_136_TRANS_EVENT_REP();
                 ID_36_TRANS_EVENT_RESPONSE iD_36_TRANS_EVENT_RESPONSE = new ID_36_TRANS_EVENT_RESPONSE();
-
+                
                 iD_136_TRANS_EVENT_REP.EventType = eventType;
                 iD_136_TRANS_EVENT_REP.CurrentAdrID = theVehicleInfo.CurrentAdrID;
                 iD_136_TRANS_EVENT_REP.CurrentSecID = theVehicleInfo.CurrentSecID;
                 iD_136_TRANS_EVENT_REP.SecDistance = 0;
+                iD_136_TRANS_EVENT_REP.ZoneCommandID = Zone_ID;
                 //iD_136_TRANS_EVENT_REP.ZoneCommandID = "123";
 
                 WrapperMessage wrappers = new WrapperMessage();
@@ -918,6 +947,7 @@ namespace Mirle.Agvc.Simulator
                                 iD_132_TRANS_COMPLETE_REPORT.CmpStatus = CompleteStatus.CmpStatusCycleMove;
                                 setEmptyCarrier132(iD_132_TRANS_COMPLETE_REPORT);
                                 agent.IsCycleMove = false;
+                                agent.destination = string.Empty;
                             }
                             break;
                         case ActiveType.Load:
@@ -977,7 +1007,7 @@ namespace Mirle.Agvc.Simulator
                 iD_132_TRANS_COMPLETE_REPORT.CurrentSecID = theVehicleInfo.CurrentSecID;
                 iD_132_TRANS_COMPLETE_REPORT.CurrentAdrID = theVehicleInfo.CurrentAdrID;
                 iD_132_TRANS_COMPLETE_REPORT.CmdDistance = 0;
-                iD_132_TRANS_COMPLETE_REPORT.CmdID = theVehicleInfo.CmdID;
+                iD_132_TRANS_COMPLETE_REPORT.CmdID = transRequest.CmdID;
                 iD_132_TRANS_COMPLETE_REPORT.BOXID = theVehicleInfo.BOXID;
                 iD_132_TRANS_COMPLETE_REPORT.CSTID = theVehicleInfo.CSTID;
                 iD_132_TRANS_COMPLETE_REPORT.LOTID = theVehicleInfo.LOTID;
@@ -1064,5 +1094,36 @@ namespace Mirle.Agvc.Simulator
                 return RealObject;
             }
         }
+
+        public string GetPortAddress(string port_id)
+        {
+            string sResult = string.Empty;
+            bool bRtnCode = false;
+            string trx_name = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            string type_id = "O";
+
+            try
+            {
+                string[] action_targets = new string[]
+                {
+                    "QxPortStation",
+                    "GetPortStationAddress"
+                };
+                StringBuilder sb = new StringBuilder();
+                sb.Append($"{nameof(trx_name)}={trx_name}").Append("&");
+                sb.Append($"{nameof(type_id)}={type_id}").Append("&");
+                sb.Append($"{nameof(port_id)}={port_id}");
+                byte[] byteArray = Encoding.UTF8.GetBytes(sb.ToString());
+                sResult = scApp.mgoApp.getWebClientManager().PostInfoToServer(action_targets, byteArray);
+
+            }
+            catch (Exception ex)
+            {
+                //logger.Error(ex, "Exception");
+            }
+
+            return sResult;
+        }
+
     }
 }

@@ -540,7 +540,7 @@ namespace Mirle.Agvc.Simulator
 
                         //Send_Cmd144_StatusChangeReport(false);
                         Send_Cmd134_TransferEventReport();
-                        SpinWait.SpinUntil(() => false, 2000);
+                        SpinWait.SpinUntil(() => false, 500);
 
                         sectionAddressCount++;
                     }
@@ -574,7 +574,7 @@ namespace Mirle.Agvc.Simulator
                 while (agent.IsCycleMove) {
                     if (agent.IsPaused)
                     {
-                        SpinWait.SpinUntil(() => false, 1000);
+                        SpinWait.SpinUntil(() => false, 3000);
                         continue;
                     }
 
@@ -660,7 +660,7 @@ namespace Mirle.Agvc.Simulator
                         scApp.updateVhAddress(agent.RemotePort().ToString(), theVehicleInfo.CurrentAdrID);
 
                         Send_Cmd134_TransferEventReport();
-                        SpinWait.SpinUntil(() => false, 3000);
+                        SpinWait.SpinUntil(() => false, 500);
 
                         sectionAddressCount++;
                     }
@@ -730,10 +730,30 @@ namespace Mirle.Agvc.Simulator
             }
 
         }
+        public void Send_Cmd144_PauseStatusChangeReport(VhStopSingle IsPaused)
+        {
+            try
+            {
+                ID_144_STATUS_CHANGE_REP iD_144_SendToOHTC = new ID_144_STATUS_CHANGE_REP();
+                iD_144_SendToOHTC = Deep_Clone<ID_144_STATUS_CHANGE_REP>(theVehicleInfo);
+                iD_144_SendToOHTC.SecDistance = 50;
+                iD_144_SendToOHTC.PauseStatus = IsPaused;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
+                wrappers.StatueChangeRep = iD_144_SendToOHTC;
+
+                ServerClientAgent.TrxTcpIp.SendGoogleMsg(wrappers);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+
+        }
 
         public void Send_Cmd134_TransferEventReport()
         {
-            Send_Cmd144_ObstacleStatusChangeReport(VhStopSingle.StopSingleOff);
             BlockData blockData = scApp.BlockDataBLL.loadBlockByID(theVehicleInfo.CurrentAdrID.Substring(0, 1) == "1" ? theVehicleInfo.CurrentAdrID : theVehicleInfo.CurrentSecID);
             double VhXAxis = Convert.ToDouble(blockData.XAxis);
             double VhYAxis = Convert.ToDouble(blockData.YAxis);

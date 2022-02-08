@@ -1839,10 +1839,16 @@ namespace Mirle.Agvc.Simulator
         {
             ID_39_PAUSE_REQUEST receive = (ID_39_PAUSE_REQUEST)e.objPacket;
             //TODO: Pause/Continue+/Reserve
-            if(receive.EventType == PauseEvent.Pause)
+            if (receive.EventType == PauseEvent.Pause)
+            {
                 IsPaused = true;
-            else
+                operaObject.Send_Cmd144_PauseStatusChangeReport(VhStopSingle.StopSingleOn);
+            }
+            else { 
                 IsPaused = false;
+                operaObject.Send_Cmd144_PauseStatusChangeReport(VhStopSingle.StopSingleOff);
+                operaObject.Send_Cmd144_ObstacleStatusChangeReport(VhStopSingle.StopSingleOff);
+            }
 
             int replyCode = 0;
             Send_Cmd139_PauseResponse(e.iSeqNum, replyCode);

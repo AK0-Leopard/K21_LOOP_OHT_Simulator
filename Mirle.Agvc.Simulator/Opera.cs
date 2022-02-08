@@ -586,6 +586,7 @@ namespace Mirle.Agvc.Simulator
 
                     if (!scApp.checkVhAddress(agent.RemotePort().ToString(), cur_section.TO_ADR_ID))
                     {
+                        Send_Cmd144_ObstacleStatusChangeReport(VhStopSingle.StopSingleOn);
                         SpinWait.SpinUntil(() => false, 2000);
                     }
                     else {
@@ -702,8 +703,32 @@ namespace Mirle.Agvc.Simulator
             }
 
         }
+
+        public void Send_Cmd144_ObstacleStatusChangeReport(VhStopSingle IsStop)
+        {
+            try
+            {
+                ID_144_STATUS_CHANGE_REP iD_144_SendToOHTC = new ID_144_STATUS_CHANGE_REP();
+                iD_144_SendToOHTC = Deep_Clone<ID_144_STATUS_CHANGE_REP>(theVehicleInfo);
+                iD_144_SendToOHTC.SecDistance = 50;
+                iD_144_SendToOHTC.ObstacleStatus = IsStop;
+
+                WrapperMessage wrappers = new WrapperMessage();
+                wrappers.ID = WrapperMessage.StatueChangeRepFieldNumber;
+                wrappers.StatueChangeRep = iD_144_SendToOHTC;
+
+                ServerClientAgent.TrxTcpIp.SendGoogleMsg(wrappers);
+            }
+            catch (Exception ex)
+            {
+                var msg = ex.StackTrace;
+            }
+
+        }
+
         public void Send_Cmd134_TransferEventReport()
         {
+            Send_Cmd144_ObstacleStatusChangeReport(VhStopSingle.StopSingleOff);
             BlockData blockData = scApp.BlockDataBLL.loadBlockByID(theVehicleInfo.CurrentAdrID.Substring(0, 1) == "1" ? theVehicleInfo.CurrentAdrID : theVehicleInfo.CurrentSecID);
             double VhXAxis = Convert.ToDouble(blockData.XAxis);
             double VhYAxis = Convert.ToDouble(blockData.YAxis);

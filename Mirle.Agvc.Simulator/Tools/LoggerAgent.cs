@@ -72,7 +72,7 @@ namespace Mirle.Agvc.Simulator
             if (dicLoggers.ContainsKey(type))
             {
                 Logger logger = dicLoggers[type];
-                logger.SaveLogFile(type, logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
+                //logger.SaveLogFile(type, logFormat.LogLevel, logFormat.ClassFunctionName, logFormat.Device, logFormat.CarrierId, logFormat.Message);
             }
         }
 
